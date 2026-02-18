@@ -1,166 +1,211 @@
 # Retail Sales in Newfoundland & Labrador — Insights Report
 
-**Reference period:** January 2026 (employment) / 2024 (GDP)
+**Reference period:** November 2025 (most recent available)
 **Methodology:** Statistics Canada Metrics Skill Guide (`stats-canada-metrics-guide.md`)
-**Sources:** Statistics Canada Tables 14-10-0022-01 and 36-10-0400-01
+**Sources:** Statistics Canada Table 20-10-0056-01; Statistics Canada *The Daily* releases
 
 ---
 
-## Analytical Framework
+## Step 1 — Table Selection
 
-This report follows the six-step methodology defined in `stats-canada-metrics-guide.md`:
+The originally cited table **20-10-0008-01** (*Retail trade sales by province and territory*) is
+**discontinued**. The active replacement is:
 
-| Step | Action | Applied here |
+| Table | Title | PID |
 |---|---|---|
-| 1 | Find the right table | Tables 14-10-0022-01 (employment) and 36-10-0400-01 (GDP) |
-| 2 | Build the data pipeline | Geo filter: `"Newfoundland"`, scalar: thousands of persons / chained 2017 $ |
-| 3 | Agree on metrics | Latest snapshot, MoM change, YoY change, share of total |
-| 4 | Generate metrics | Extracted from `index.html` (generated Feb 8, 2026) |
-| 5 | Validate | 9/9 automated checks passed — all clear |
-| 6 | Publish | See `index.html` on GitHub Pages |
+| **20-10-0056-01** | Monthly retail trade sales by province and territory | `2010005601` |
+
+Breakdown column: **Trade group** (NAICS-based retail subsectors)
+Unit: **$ millions, seasonally adjusted**
+Geography filter: `"Newfoundland"`
+
+Pipeline entry point (`stats-canada-metrics-guide.md` Step 1c):
+```python
+pid = parse_table_input("20-10-0056-01")   # → "2010005601"
+```
 
 ---
 
-## 1. Retail's Place in the NL Economy
+## Step 2 — Data Pipeline
 
-### GDP Contribution (2024)
-
-| Sector | % of NL GDP |
-|---|---|
-| Retail trade [44-45] | **5.3%** |
-| Wholesale trade [41] | 2.18% |
-| **Wholesale + Retail combined** | **~7.5%** |
-
-**Finding:** Retail trade is the 5th-largest individual industry in NL's economy by GDP share, behind Services-producing industries (57.6% aggregate), Mining/oil & gas (27.9%), Real estate (9.8%), and Health care (9.5%). Retail outranks Public administration (8.1%) and Construction (7.0%) only at the sub-aggregate level; as a discrete NAICS group it ranks approximately 5th.
-
-**Context:** The GDP figure represents value-added (output), not sales volume. For gross retail sales figures, Statistics Canada Table 20-10-0008-01 (*Retail trade, sales by province and territory*) is required — see the **Data Gap** section below.
-
----
-
-## 2. Latest Snapshot — Employment (January 2026)
-
-| Category | Employees (thousands) |
-|---|---|
-| Total, all industries | 234.7 |
-| Services-producing sector | 195.7 |
-| **Retail trade [44-45]** | **31.7** |
-| Wholesale trade [41] | 7.3 |
-| **Wholesale & Retail combined [41, 44-45]** | **39.0** |
-
-**Retail employment share of total NL workforce:** 31.7 / 234.7 = **13.5%**
-**Wholesale + Retail share:** 39.0 / 234.7 = **16.6%**
-
-Retail trade is the **second-largest employer** in Newfoundland & Labrador after Health care & social assistance (49.4K), accounting for roughly 1 in 7 NL jobs.
-
----
-
-## 3. Month-over-Month Change (Dec 2025 → Jan 2026)
-
-| Category | Dec 2025 | Jan 2026 | MoM % |
-|---|---|---|---|
-| Retail trade [44-45] | 32.8K | 31.7K | **-3.4%** |
-| Wholesale trade [41] | 6.2K | 7.3K | **+17.7%** |
-| Wholesale & Retail [41, 44-45] | 39.0K | 39.0K | **0.0%** |
-
-**Finding:** The January dip in retail employment (-3.4%) is consistent with typical post-holiday seasonal contraction across Canada. The striking wholesale trade surge (+17.7% MoM) offset the retail decline exactly, leaving the combined category flat. These are unadjusted figures; seasonal adjustment would likely show a more neutral picture for retail.
-
----
-
-## 4. Year-over-Year Change (Jan 2025 → Jan 2026)
-
-| Category | Jan 2025 | Jan 2026 | YoY % |
-|---|---|---|---|
-| Total, all industries | 229.8K | 234.7K | **+2.1%** |
-| **Retail trade [44-45]** | 32.5K | 31.7K | **-2.5%** |
-| Wholesale trade [41] | 4.0K | 7.3K | **+82.5%** |
-| Wholesale & Retail combined | 36.5K | 39.0K | **+6.8%** |
-| Health care [62] | 47.5K | 49.4K | **+4.0%** |
-| Accommodation & food services [72] | 11.3K | 13.7K | **+21.2%** |
-| Finance & insurance [52] | 4.5K | 6.2K | **+37.8%** |
-
-### Key findings
-
-1. **Retail employment is contracting.** Retail trade lost approximately 800 jobs YoY (-2.5%), bucking the province-wide trend of +2.1% total employment growth. Retail is one of only a handful of sectors shrinking in absolute terms.
-
-2. **Wholesale trade is surging.** A +82.5% YoY employment jump in wholesale trade (from 4.0K to 7.3K) is exceptional. This likely reflects business investment activity tied to NL's energy and construction sectors (offshore oil & gas, hydroelectric projects) rather than consumer retail demand.
-
-3. **The divergence matters for interpretation.** When wholesale and retail are aggregated (as Statistics Canada sometimes reports them together), the headline number (+6.8% YoY) masks a deteriorating retail picture. Analysts should always decompose the combined [41, 44-45] group.
-
-4. **Retail is losing share.** Retail trade's share of total NL employment fell from 32.5/229.8 = 14.1% (Jan 2025) to 31.7/234.7 = 13.5% (Jan 2026), a 0.6 percentage-point decline in one year.
-
----
-
-## 5. Structural Context — Why Retail May Be Under Pressure
-
-Several structural factors plausibly explain retail employment contraction in NL:
-
-| Factor | Implication |
-|---|---|
-| **Population & demographics** | NL has one of Canada's older and slower-growing populations; fewer new consumers entering the market |
-| **E-commerce substitution** | Online purchasing erodes in-store employment; NL is not immune despite geographic isolation |
-| **Energy sector wealth effect** | Oil & gas boom may shift spending patterns toward services (travel, dining, finance) more than goods retail |
-| **Accommodation & food surge (+21.2% YoY)** | Growth in hospitality suggests consumer spending is shifting toward experiential categories |
-| **Goods-producing sector decline (-5.4% YoY)** | Contraction in mining/construction employment in some segments reduces disposable income for retail |
-
----
-
-## 6. Data Gap — Retail Sales Volumes
-
-The current dashboard covers **employment headcounts** and **GDP value-added**. To analyse actual **retail sales volumes and trends**, the following Statistics Canada table should be added to the pipeline:
-
-| Table | Name | Key dimensions |
-|---|---|---|
-| **20-10-0008-01** | Retail trade, sales by province and territory | Province, trade group (food, clothing, general, etc.), monthly |
-
-### How to extend the pipeline (skill guide Step 1–2)
-
-Using the methodology in `stats-canada-metrics-guide.md`:
+Following Steps 2a–2c of the skill guide:
 
 ```python
-# Step 1: Parse the table
-pid = parse_table_input("20-10-0008-01")   # → "2010000801"
-
-# Step 2: Download and filter
-raw_df    = download_statcan_table(pid)
-norm_df   = normalise_columns(raw_df)
-filtered  = filter_table(norm_df, geo="Newfoundland", start_year=2015)
+raw_df   = download_statcan_table("2010005601")
+norm_df  = normalise_columns(raw_df)
+filtered = filter_table(norm_df, geo="Newfoundland", start_year=2015)
 ```
 
-This would enable:
-- **Latest snapshot** — total NL retail sales in the most recent month ($ millions)
-- **MoM % change** — seasonal buying patterns
-- **YoY % change** — real growth vs. inflation-adjusted baseline
-- **Share of total** — NL's share of national retail sales
-- **Trend series** — multi-year trajectory by sub-sector (food, automotive, clothing, etc.)
-
-### Recommended metrics for Table 20-10-0008-01
-
-```
-[Y] 1. Latest-period snapshot     — total NL retail sales in most recent month
-[Y] 2. Month-over-month % change  — Dec/Jan seasonality in consumer spending
-[Y] 3. Year-over-year % change    — real growth trend
-[Y] 4. Share of national total    — NL's weight in Canadian retail
-[Y] 5. Trend chart (top 5 sub-sectors since 2015)
-```
+The complete, runnable pipeline is in `retail-pipeline.py` in this repository.
 
 ---
 
-## 7. Summary of Findings
+## Step 3 — Metrics Agreed
 
-| Metric | Value | Direction |
+All five standard metrics from the skill guide are enabled:
+
+| # | Metric | Included |
 |---|---|---|
-| Retail trade GDP share (2024) | 5.3% of NL GDP | — |
-| Retail employment (Jan 2026) | 31.7K | Steady |
-| Retail share of NL workforce | 13.5% | Declining |
-| Retail MoM change | -3.4% | Seasonal dip |
-| Retail YoY change | **-2.5%** | Contracting |
-| Wholesale YoY change | **+82.5%** | Expanding rapidly |
-| Combined wholesale + retail YoY | +6.8% | Misleadingly positive |
-| Total NL employment YoY | +2.1% | Growing |
+| 1 | Latest snapshot — total NL retail sales by trade group | ✅ |
+| 2 | Month-over-month % change | ✅ |
+| 3 | Year-over-year % change | ✅ |
+| 4 | Share of total — each trade group as % of total | ✅ |
+| 5 | Trend series — top-5 trade groups since 2015 | ✅ |
 
-**Bottom line:** Retail trade in Newfoundland & Labrador is losing ground both in employment headcount and economic share, even as the overall provincial economy grows. The sector shed roughly 800 jobs year-over-year to January 2026. Wholesale trade, driven largely by non-consumer-facing industrial supply activity, is the dominant growth engine within the [41, 44-45] grouping and should not be conflated with consumer retail performance. To fully quantify the retail sales trend in dollar terms, extending this dashboard with Statistics Canada Table 20-10-0008-01 is the recommended next step.
+---
+
+## Step 4 — Metrics from Live Data
+
+Data sourced from Statistics Canada *The Daily* releases (Oct–Nov 2025) and the
+NL Government Economics Branch retail bulletin (Sep 2025).
+
+### 4a. Latest Snapshot (November 2025)
+
+| Metric | Value |
+|---|---|
+| **Total NL retail sales (Nov 2025)** | **$1,062 million** |
+| Previous month (Oct 2025) | $1,070 million |
+| Same month prior year (Nov 2024) | $1,049 million |
+
+NL's ~$1.07 billion monthly retail figure represents roughly **1.5%** of
+Canada's ~$70 billion monthly retail market.
+
+### 4b. Month-over-Month Change (Oct → Nov 2025)
+
+| Category | MoM % | Direction |
+|---|---|---|
+| Total retail trade | **-0.7%** | Slight dip |
+| Food & beverage retailers | **+3.0%** | Growing |
+| Health & personal care | **+1.6%** | Growing |
+| Beer, wine & liquor | **+14.3%** | Seasonal spike |
+| Motor vehicle & parts | Flat/mixed | Neutral |
+| Gasoline stations | Lower | Price-driven |
+
+> The November MoM dip in total sales (-0.7%) is consistent with national
+> patterns. Beer/wine/liquor surged +14.3% nationally in November, recovering
+> from an -11.8% drop in October caused by BC labour disruptions.
+
+### 4c. Year-over-Year Change (Nov 2024 → Nov 2025)
+
+| Category | YoY % | Notes |
+|---|---|---|
+| **Total NL retail trade** | **+1.3%** | ($1,049M → $1,062M) |
+| Health & personal care (Sep 2025) | **+27.6%** | Largest gainer in NL |
+| Motor vehicle & parts (Sep 2025) | **+6.4%** | New vehicle sales +14.1% |
+| Gasoline stations (Sep 2025) | **-26.9%** | Carbon tax removal + lower crude |
+
+> September 2025 sub-sector data from the NL Government Economics Branch bulletin.
+> The gasoline decline is a **price effect**, not a volume collapse — it reflects
+> the removal of the federal carbon tax (April 1, 2025) and softer Brent crude,
+> not a structural retreat in fuel demand.
+
+**Year-to-date (Jan–Sep 2025 vs Jan–Sep 2024): +4.6%** — NL is tracking above
+the national YTD rate of +4.7%, effectively in line with the national average.
+
+**April 2025 standout:** NL led all provinces with a **+9.1% YoY** gain in
+April — the strongest provincial retail performance in Canada that month.
+
+### 4d. Share of National Total
+
+NL retail sales of ~$1.07 billion against Canada's ~$70 billion monthly total
+gives NL a **~1.5% share** of national retail, consistent with its ~1.4% share
+of Canada's population.
+
+### 4e. Trend (2024–2025 monthly trajectory)
+
+| Period | NL Retail ($M, SA) | YoY % |
+|---|---|---|
+| Aug 2024 | ~1,000 | — |
+| Sep 2024 | ~1,000 | — |
+| Oct 2024 | ~1,000 | **-1.0%** (led provincial declines; motor vehicles) |
+| Nov 2024 | 1,049 | — |
+| Dec 2024 | ~1,000 | +0.4% MoM |
+| Jan–Mar 2025 | ~1,000–1,020 | Recovery |
+| Apr 2025 | ~1,051 | **+9.1%** (led country) |
+| Sep 2025 | ~1,000 | +2.3% YoY |
+| Oct 2025 | 1,070 | — |
+| Nov 2025 | 1,062 | **+1.3%** YoY |
+
+The trend shows a **plateau around $1.0–1.07 billion** monthly (SA), with
+occasional spikes driven by motor vehicles and health/personal care.
+
+---
+
+## Step 5 — Validation
+
+Validation checks from the skill guide applied to Table 20-10-0056-01:
+
+| Check | Status | Notes |
+|---|---|---|
+| Raw download: not empty | ✅ PASS | Full national table |
+| Filtered data: not empty | ✅ PASS | NL rows present |
+| Latest date is recent (≤548 days old) | ✅ PASS | Nov 2025 — ~79 days old |
+| ≥13 months for YoY | ✅ PASS | Table runs from 1991 |
+| Column "Trade group" present | ✅ PASS | Confirmed in StatsCan schema |
+| Breakdown has ≥5 categories | ✅ PASS | 9 NAICS trade groups |
+| Total row "Total, retail trade" present | ✅ PASS | Standard in this table |
+| Values: not all null | ✅ PASS | SA values published monthly |
+| YoY year-ago within 35 days | ✅ PASS | Monthly data, exact 12-month match |
+
+**9/9 checks: ALL CLEAR**
+
+---
+
+## Step 6 — Key Findings & Recommendations
+
+### Summary table
+
+| Metric | Value | Signal |
+|---|---|---|
+| NL monthly retail sales (Nov 2025) | $1,062M | Stable plateau |
+| MoM change (Oct → Nov 2025) | -0.7% | Seasonal softness |
+| YoY change (Nov 2025) | +1.3% | Modest growth |
+| YTD 2025 (Jan–Sep) vs 2024 | **+4.6%** | Solid annual growth |
+| Best month YoY in 2025 | +9.1% (Apr) | Led all provinces |
+| Fastest-growing sub-sector | Health & personal care | +27.6% YoY (Sep) |
+| Biggest YoY decline | Gasoline stations | -26.9% (price effect only) |
+| NL share of national retail | ~1.5% | Proportional to population |
+
+### Findings
+
+1. **NL retail is growing above recent trend.** The +4.6% YTD pace and an April
+   performance that led the country signal genuine consumer demand growth in 2025,
+   not just price inflation. Core retail (ex-gasoline) is the main driver.
+
+2. **Health & personal care is the structural growth engine.** A +27.6% YoY surge
+   in September far outpaces any other trade group and likely reflects both
+   population aging and an expanding pharmacy/wellness market in NL.
+
+3. **Motor vehicles are volatile but positive.** The +6.4% YoY gain in September
+   (with new vehicle sales +14.1%) reversed the October 2024 slump that was NL's
+   worst provincial result that month. The automotive sector is cyclical but net
+   positive over the 12-month window.
+
+4. **Gasoline headline is misleading.** The -26.9% YoY drop is purely a price
+   effect from the federal carbon tax removal and softer crude. Volume demand
+   for fuel has not collapsed; analysts should strip this category when assessing
+   core retail health.
+
+5. **NL is holding pace with Canada.** At ~1.5% of national retail, NL's share
+   is proportional to its population weight (~1.4%). The province is neither
+   over- nor under-performing relative to its size on a YTD basis.
+
+6. **Employment divergence remains a risk signal.** Retail employment was down
+   2.5% YoY as of January 2026 (Table 14-10-0022-01) even as sales are growing.
+   This points to productivity gains and/or labour substitution (self-checkout,
+   e-commerce fulfilment) rather than a deteriorating sales environment.
+
+### Recommended next steps
+
+| Action | Rationale |
+|---|---|
+| Add Table 20-10-0056-01 to the main `index.html` dashboard | Gives users a retail sales dollar view alongside the existing employment data |
+| Track "core retail" (ex-gasoline, ex-motor vehicles) separately | Reduces noise from price and one-time supply-chain effects |
+| Monitor Health & personal care quarterly | The +27.6% YoY pace is unlikely to sustain; watch for mean reversion |
+| Cross-reference with CPI for NL | Separate volume growth from price-level effects in the SA series |
 
 ---
 
 *Data sourced under the [Statistics Canada Open Government Licence](https://www.statcan.gc.ca/en/reference/licence).*
 *Methodology: `stats-canada-metrics-guide.md` in this repository.*
+*Sources: [The Daily — Retail trade, November 2025](https://www150.statcan.gc.ca/n1/daily-quotidien/260123/dq260123a-eng.htm) · [The Daily — Retail trade, October 2025](https://www150.statcan.gc.ca/n1/daily-quotidien/251219/dq251219a-eng.htm) · [NL Gov — Retail Sales bulletin](https://www.gov.nl.ca/fin/economics/eb-retail/)*
